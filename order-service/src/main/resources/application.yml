@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: order-service
+
+server:
+  port: ${SERVER_PORT:8081}  # fallback to 8081 if not set
+
+kafka:
+  bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}  # fallback
+  producer:
+    acks: ${SPRING_KAFKA_PRODUCER_ACKS:all}
+    retries: ${SPRING_KAFKA_PRODUCER_RETRIES:3}
+    linger-ms: ${SPRING_KAFKA_PRODUCER_LINGER_MS:5}
+    batch-size: ${SPRING_KAFKA_PRODUCER_BATCH_SIZE:16384}
+
+  topics:
+    order-events: ${ORDER_TOPIC_NAME:order-events}
