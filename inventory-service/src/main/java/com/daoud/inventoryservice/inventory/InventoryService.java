@@ -12,7 +12,7 @@ public class InventoryService {
     private final Map<String, Integer> inventory = new ConcurrentHashMap<>();
 
     public void initializeProduct(String productId, int initialQuantity) {
-        inventory.putIfAbsent(productId, initialQuantity);
+        inventory.put(productId, initialQuantity);
     }
 
     public boolean reduceStock(String productId, int quantity) {
@@ -20,7 +20,7 @@ public class InventoryService {
             if (availableQty >= quantity) {
                 return availableQty - quantity;
             } else {
-                return availableQty; // Not enough stock, unchanged
+                return null;
             }
         }) != null;
     }
