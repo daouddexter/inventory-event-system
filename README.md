@@ -80,3 +80,82 @@ kafka:
 topics:
   order-events: ${ORDER_TOPIC_NAME:order-events}
 ```
+
+
+
+# 📦 Inventory Service — Kafka Consumer (Spring Boot + Podman + KRaft)
+
+This microservice listens for order events from a Kafka topic and updates product inventory in an in-memory store. It is a stateless, reactive component of a distributed system built using clean architecture and event-driven design.
+
+---
+
+## 🚀 Features
+
+- ✅ Listens to Kafka topic order-events
+- ✅ Processes incoming OrderEvent JSON messages
+- ✅ In-memory product inventory with auto-initialization
+- ✅ Graceful stock reduction and logging
+- ✅ Externalized configuration via environment variables
+- ✅ Works with Podman, Docker, and KRaft mode Kafka
+
+---
+
+## ⚙️ Tech Stack
+
+| Layer             | Technology                |
+|------------------|---------------------------|
+| Language          | Java 17+                  |
+| Framework         | Spring Boot 3.x           |
+| Messaging Queue   | Apache Kafka (KRaft mode) |
+| Container Runtime | Podman (or Docker)        |
+| Build Tool        | Maven                     |
+| JSON Handling     | Jackson                   |
+
+---
+
+## 🧱 Architecture Overview
+
+- Kafka consumer using @KafkaListener
+- Consumes string-based JSON messages and maps them to OrderEvent DTO
+- Updates inventory via InventoryService
+- Uses application.yml and ENV overrides for topic/group/kafka host
+- Minimal dependencies, fast startup
+
+---
+
+## 📁 Project Structure
+
+src/
+├── main/
+│   ├── java/com/daoud/inventoryservice/
+│   │   ├── config/
+│   │   ├── consumer/
+│   │   │   └── OrderEventConsumer.java
+│   │   ├── inventory/
+│   │   │   └── InventoryService.java
+│   │   ├── order/
+│   │   │   └── OrderEvent.java
+│   │   └── InventoryServiceApplication.java
+│   └── resources/
+│       └── application.yml
+└── pom.xml
+
+---
+
+## 🔧 Configuration (application.yml)
+
+```yaml
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: inventory-service
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    order-topic: ${ORDER_TOPIC_NAME:order-events}
+    group-id: inventory-consumer-group
+```
+
+

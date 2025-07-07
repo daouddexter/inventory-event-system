@@ -36,5 +36,17 @@ services:
       SPRING_KAFKA_PRODUCER_BATCH_SIZE: 16384
       ORDER_TOPIC_NAME: order-events
 
+  inventory-service:
+    image: daoud3d/inventory-service:v1.0.0
+    container_name: inventory-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - kafka
+    environment:
+      SERVER_PORT: 8082
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      ORDER_TOPIC_NAME: order-events      
+
 volumes:
   kafka_data:
