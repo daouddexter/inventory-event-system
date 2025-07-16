@@ -1,17 +1,52 @@
 spring:
   application:
     name: order-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:test}
+
 
 server:
   port: ${SERVER_PORT:8081}  # fallback to 8081 if not set
 
 kafka:
-  bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}  # fallback
+  bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+  order-topic: ${ORDER_TOPIC_NAME:order-events}
+  inventory-status-topic: ${INVENTORY_STATUS_TOPIC_NAME:inventory-status-events}
+  group-id: order-service-group
   producer:
     acks: ${SPRING_KAFKA_PRODUCER_ACKS:all}
     retries: ${SPRING_KAFKA_PRODUCER_RETRIES:3}
     linger-ms: ${SPRING_KAFKA_PRODUCER_LINGER_MS:5}
     batch-size: ${SPRING_KAFKA_PRODUCER_BATCH_SIZE:16384}
 
-  topics:
-    order-events: ${ORDER_TOPIC_NAME:order-events}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    defaults:
+      enabled: true
+
+
+features:
+  kafka-enabled: ${FEATURES_KAFKA_ENABLED:false}  
+  
+logging:
+  file:
+    name: /logs/app.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    
+    
+eureka:
+  instance:
+    preferIpAddress: true
+  client:
+    fetchRegistry: true
+    registerWithEureka: true
+    serviceUrl:
+      defaultZone: http://discovery-server:8761/eureka/    

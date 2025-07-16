@@ -1,28 +1,31 @@
 package com.daoud.inventoryservice.consumer;
 
-import com.daoud.inventoryservice.config.KafkaConsumerProperties;
 import com.daoud.inventoryservice.inventory.InventoryService;
+import com.daoud.inventoryservice.inventory.InventoryStatusEvent;
+import com.daoud.inventoryservice.inventory.InventoryStatusEventProducer;
 import com.daoud.inventoryservice.order.OrderEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@ConditionalOnProperty(prefix = "features", name = "kafka-enabled", havingValue = "true", matchIfMissing = false)
 @Slf4j
 @Component
-@EnableConfigurationProperties(KafkaConsumerProperties.class)
 public class OrderEventConsumer {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final InventoryService inventoryService;
+    private final InventoryStatusEventProducer inventoryStatusEventProducer;
 
-    public OrderEventConsumer(InventoryService inventoryService) {
+    public OrderEventConsumer(InventoryService inventoryService, InventoryStatusEventProducer inventoryStatusEventProducer) {
         this.inventoryService = inventoryService;
 
+        this.inventoryStatusEventProducer = inventoryStatusEventProducer;
     }
 
     @KafkaListener(
@@ -41,6 +44,17 @@ public class OrderEventConsumer {
             log.info("✅ Inventory updated for product {}: new stock = {}",
                     event.getProductId(),
                     inventoryService.getAvailableStock(event.getProductId()));
+            InventoryStatusEvent.Status status = success
+                    ? InventoryStatusEvent.Status.SUCCESS
+                    : InventoryStatusEvent.Status.FAILED;
+
+            InventoryStatusEvent inventoryStatusEvent = new InventoryStatusEvent(
+                    event.getProductId(),
+                    inventoryService.getAvailableStock(event.getProductId()),
+                    status
+            );
+
+            inventoryStatusEventProducer.send(inventoryStatusEvent);
         } else {
             log.warn("⚠️ Not enough stock for product {}", event.getProductId());
         }
